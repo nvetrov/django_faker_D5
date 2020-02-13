@@ -1,4 +1,7 @@
-# HOW TO USE in SHELL
+# PyDev console: starting.
+# Python 3.8.0 (default, Oct 28 2019, 16:14:01)
+# [GCC 9.2.1 20191008] on linux
+# Django 3.0.3
 # import seeder
 # from p_library.models import Author, Book
 # seeder.seed_all(300, overwrite=True)
@@ -13,12 +16,14 @@
 import datetime
 import random
 import time
+
 from faker import Faker
 
 # fake = Faker()
 fake = Faker('ru_RU')
 
-# from django.contrib.auth.models import User
+from django.contrib.auth.models import User   # https://docs.djangoproject.com/en/3.0/topics/auth/default/
+
 # from polls.models import Choice, Poll, Vote
 from p_library.models import Author, Book
 
@@ -49,29 +54,27 @@ from p_library.models import Author, Book
 #                 flush=True
 #                 )
 #     print()
-
+user = User.objects.create_user('sa', 'nvetrov@gmail.com', 'C1vmdpalc34a')
+user.save()
 def seed_authors(num_entries=10, overwrite=False):
     """
     Creates num_entries worth a new users
     """
     if overwrite:
         print("Overwriting Users")
+        User.objects.all().delete()
         Author.objects.all().delete()
     count = 0
     for _ in range(num_entries):
-        full_name = fake.name(unique=True)
+        full_name = fake.name() #fake.name(unique=True)
         birth_year = fake.year()
         country = fake.country()
-        u = Author.objects.create(
-            full_name=full_name,
-            birth_year=birth_year,
-            country=country
-        )
+        u = Author.objects.create(full_name=full_name, birth_year=birth_year, country=country)
         u.save()
         count += 1
         percent_complete = count / num_entries * 100
         print(
-            "Adding {} new Users: {:.2f}%".format(num_entries, percent_complete),
+            "Adding {} new Author: {:.2f}%".format(num_entries, percent_complete),
             end='\r',
             flush=True
         )
@@ -81,7 +84,7 @@ def seed_authors(num_entries=10, overwrite=False):
 def seed_book(num_entries=10, choice_min=2, choice_max=5, overwrite=False):
     """
     Seeds num_entries poll with random users as owners
-    Each poll will be seeded with # choices from choice_min to choice_max
+    Each Book will be seeded with # choices from choice_min to choice_max
     """
     if overwrite:
         print('Overwriting polls')
@@ -90,9 +93,9 @@ def seed_book(num_entries=10, choice_min=2, choice_max=5, overwrite=False):
     count = 0
     for _ in range(num_entries):
         p = Book(
-            ISBN=fake.isbn10(separator='-'),    #fake.msisdn(),
-            title=fake.words(nb=3, ext_word_list=None, unique=True),  #fake.name(),
-            description=fake.sentences(nb=3, ext_word_list=None),  #fake.text(),
+            ISBN=fake.isbn10(separator='-'),  # fake.msisdn(),
+            title=fake.words(nb=3, ext_word_list=None, unique=True),  # fake.name(),
+            description=fake.sentences(nb=3, ext_word_list=None),  # fake.text(),
             year_release=fake.year(),
             author=random.choice(author)
         )
@@ -106,11 +109,12 @@ def seed_book(num_entries=10, choice_min=2, choice_max=5, overwrite=False):
         count += 1
         percent_complete = count / num_entries * 100
         print(
-            "Adding {} new Polls: {:.2f}%".format(num_entries, percent_complete),
+            "Adding {} new Book: {:.2f}%".format(num_entries, percent_complete),
             end='\r',
             flush=True
         )
     print()
+
 
 #
 # def seed_votes():
@@ -157,3 +161,9 @@ def seed_all(num_entries=10, overwrite=False):
     minutes = int(elapsed_time // 60)
     seconds = int(elapsed_time % 60)
     print("Script Execution took: {} minutes {} seconds".format(minutes, seconds))
+
+
+if __name__ == '__main__':
+    print("Populating data..")
+    seed_all()
+    print("Polulating Complate")
