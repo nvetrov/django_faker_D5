@@ -27,7 +27,7 @@ class Book(models.Model):
     description = models.TextField(verbose_name=_('описание'))
     year_release = models.SmallIntegerField(verbose_name=_('год'))
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    reader = models.ForeignKey(Reader, on_delete=models.CASCADE, related_name='Books_Reader')
+    reader = models.ForeignKey(Reader, on_delete=models.CASCADE, related_name='Books_Reader', blank=True, null=True)
 
     def __str__(self):
         return self.title

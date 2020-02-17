@@ -22,40 +22,39 @@ from faker import Faker
 # fake = Faker()
 fake = Faker('ru_RU')
 
-from django.contrib.auth.models import User   # https://docs.djangoproject.com/en/3.0/topics/auth/default/
+from django.contrib.auth.models import User  # https://docs.djangoproject.com/en/3.0/topics/auth/default/
 
 # from polls.models import Choice, Poll, Vote
-from p_library.models import Author, Book
+from p_library.models import Author, Book, Reader
 
-
-# def seed_users(num_entries=10, overwrite=False):
-#     """
-#     Creates num_entries worth a new users
-#     """
-#     if overwrite:
-#         print("Overwriting Users")
-#         Users.objects.all().delete()
-#     count = 0
-#     for _ in range(num_entries):
-#         first_name = fake.first_name()
-#         last_name = fake.last_name()
-#         u = User.objects.create_user(
-#             first_name = first_name,
-#             last_name = last_name,
-#             email = first_name + "." + last_name + "@fakermail.com",
-#             username = first_name + last_name,
-#             password="password"
-#         )
-#         count += 1
-#         percent_complete = count / num_entries * 100
-#         print(
-#                 "Adding {} new Users: {:.2f}%".format(num_entries, percent_complete),
-#                 end='\r',
-#                 flush=True
-#                 )
-#     print()
-user = User.objects.create_user('sa', 'nvetrov@gmail.com', 'C1vmdpalc34a')
+user = User.objects.create_user('Admin', 'nvetrov@gmail.com', 'C1vmdpalc34a')
 user.save()
+
+
+def seed_reader(num_entries=10, overwrite=False):
+    """
+    Creates num_entries worth a new users
+    """
+    if overwrite:
+        print("Overwriting Reader")
+        User.objects.all().delete()
+        Reader.objects.all().delete()
+    count = 0
+    for _ in range(num_entries):
+        name = fake.name()
+        borrowed = str(fake.date_of_birth())
+        r = Reader.objects.create(name=name, borrowed=borrowed)
+        r.save()
+        count += 1
+        percent_complete = count / num_entries * 100
+        print(
+            "Adding {} new Reader: {:.2f}%".format(num_entries, percent_complete),
+            end='\r',
+            flush=True
+        )
+    print()
+
+
 def seed_authors(num_entries=10, overwrite=False):
     """
     Creates num_entries worth a new users
@@ -66,7 +65,7 @@ def seed_authors(num_entries=10, overwrite=False):
         Author.objects.all().delete()
     count = 0
     for _ in range(num_entries):
-        full_name = fake.name() #fake.name(unique=True)
+        full_name = fake.name()  # fake.name(unique=True)
         birth_year = fake.year()
         country = fake.country()
         u = Author.objects.create(full_name=full_name, birth_year=birth_year, country=country)
@@ -87,17 +86,19 @@ def seed_book(num_entries=10, choice_min=2, choice_max=5, overwrite=False):
     Each Book will be seeded with # choices from choice_min to choice_max
     """
     if overwrite:
-        print('Overwriting polls')
+        print('Overwriting Book')
         Book.objects.all().delete()
     author = list(Author.objects.all())
+    reader = list(Reader.objects.all())
     count = 0
     for _ in range(num_entries):
         p = Book(
-            ISBN=fake.isbn10(separator='-'),  # fake.msisdn(),
-            title=fake.words(nb=3, ext_word_list=None, unique=True),  # fake.name(),
+            ISBN=fake.isbn10(separator='-'),
+            title=fake.words(nb=2, ext_word_list=None, unique=False),  # fake.name(),
             description=fake.sentences(nb=3, ext_word_list=None),  # fake.text(),
             year_release=fake.year(),
-            author=random.choice(author)
+            author=random.choice(author),
+            reader=random.choice(reader)
         )
         p.save()
         # num_choices = random.randrange(choice_min, choice_max + 1)
@@ -116,36 +117,6 @@ def seed_book(num_entries=10, choice_min=2, choice_max=5, overwrite=False):
     print()
 
 
-#
-# def seed_votes():
-#     """
-#     Creates a new vote on every poll for every user
-#     Voted for choice is selected random.
-#     Deletes all votes prior to adding new ones
-#     """
-#     Vote.objects.all().delete()
-#     users = User.objects.all()
-#     polls = Poll.objects.all()
-#     count = 0
-#     number_of_new_votes = users.count() * polls.count()
-#     for poll in polls:
-#         choices = list(poll.choice_set.all())
-#         for user in users:
-#             v = Vote(
-#                 user=user,
-#                 poll=poll,
-#                 choice=random.choice(choices)
-#             ).save()
-#             count += 1
-#             percent_complete = count / number_of_new_votes * 100
-#             print(
-#                 "Adding {} new votes: {:.2f}%".format(number_of_new_votes, percent_complete),
-#                 end='\r',
-#                 flush=True
-#             )
-#     print()
-
-
 def seed_all(num_entries=10, overwrite=False):
     """
     Runs all seeder functions. Passes value of overwrite to all
@@ -153,6 +124,7 @@ def seed_all(num_entries=10, overwrite=False):
     """
     start_time = time.time()
     # run seeds
+    seed_reader(num_entries=num_entries, overwrite=overwrite)
     seed_authors(num_entries=num_entries, overwrite=overwrite)
     seed_book(num_entries=num_entries, overwrite=overwrite)
     # seed_votes()
@@ -163,7 +135,8 @@ def seed_all(num_entries=10, overwrite=False):
     print("Script Execution took: {} minutes {} seconds".format(minutes, seconds))
 
 
-if __name__ == '__main__':
-    print("Populating data..")
-    seed_all()
-    print("Polulating Complate")
+# if __name__ == '__main__':
+#     print("Populating data..")
+#     seed_all()
+#     print("Polulating Complate")
+
